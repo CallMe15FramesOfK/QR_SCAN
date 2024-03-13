@@ -1,6 +1,8 @@
 package com.example.qrscanapp
 
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,8 +31,28 @@ class MainActivity : AppCompatActivity() {
             if (result.contents == null) {
                 Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
             } else {
-                setResult(result.contents)
+                val uri = Uri.parse(result.contents)
+                if (uri.scheme != null && uri.scheme!!.startsWith("http")) {
+                    if (uri.host != null && uri.host.equals("youtube.com", ignoreCase = true) || uri.host.equals("youtu.be", ignoreCase = true)) {
+                        openYouTubeApp(uri)
+                    } else {
+                        startActivity(Intent(Intent.ACTION_VIEW, uri))
+                    }
+                } else {
+                    setResult(result.contents)
+                }
             }
+        }
+        }
+
+    private fun openYouTubeApp(uri: Uri) {
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        intent.setPackage("com.google.android.youtube")
+        try {
+            startActivity(intent)
+        } catch (ex: Exception) {
+            // If YouTube app is not installed, open the link in the default web browser
+            startActivity(Intent(Intent.ACTION_VIEW, uri))
         }
     }
 

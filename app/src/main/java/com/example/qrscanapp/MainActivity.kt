@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showCamera() {
-        var options = ScanOptions()
+        val options = ScanOptions()
         options.setDesiredBarcodeFormats(ScanOptions.QR_CODE)
         options.setPrompt("Place a QR code inside the viewfinder rectangle to scan it.")
         options.setBeepEnabled(false)

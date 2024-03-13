@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">QR Scan App</string>
+    <string name="kotlinappscaner">KotlinAppScaner</string>
+    <string name="goodlookingimage">GoodLookingImage</string>
 </resources>

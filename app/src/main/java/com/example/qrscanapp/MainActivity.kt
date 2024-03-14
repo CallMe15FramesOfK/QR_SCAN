@@ -1,5 +1,8 @@
 package com.example.qrscanapp
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -26,23 +29,31 @@ class MainActivity : AppCompatActivity() {
         }
 
     private val scanLauncher =
-        registerForActivityResult(ScanContract()) {
-            result: ScanIntentResult -> run {
-            if (result.contents == null) {
-                Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
-            } else {
-                val uri = Uri.parse(result.contents)
-                if (uri.scheme != null && uri.scheme!!.startsWith("http")) {
-                    if (uri.host != null && uri.host.equals("youtube.com", ignoreCase = true) || uri.host.equals("youtu.be", ignoreCase = true)) {
-                        openYouTubeApp(uri)
-                    } else {
-                        startActivity(Intent(Intent.ACTION_VIEW, uri))
-                    }
+        registerForActivityResult(ScanContract()) { result: ScanIntentResult ->
+            run {
+                if (result.contents == null) {
+                    Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
                 } else {
-                    setResult(result.contents)
+                    val uri = Uri.parse(result.contents)
+                    if (uri.scheme != null) {
+                        if (uri.scheme.equals("http", ignoreCase = true) || uri.scheme.equals(
+                                "https",
+                                ignoreCase = true
+                            )
+                        ) {
+                            startActivity(Intent(Intent.ACTION_VIEW, uri))
+                        } else if (uri.host != null && uri.host.equals(
+                                "youtube.com",
+                                ignoreCase = true
+                            ) || uri.host.equals("youtu.be", ignoreCase = true)
+                        ) {
+                            openYouTubeApp(uri)
+                        }
+                    } else {
+                        setResult(result.contents)
+                    }
                 }
             }
-        }
         }
 
     private fun openYouTubeApp(uri: Uri) {
@@ -59,7 +70,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private fun setResult(string: String) {
-        binding.tvResult.text = string
+        val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipData = ClipData.newPlainText("QR Result", string)
+        clipboardManager.setPrimaryClip(clipData)
+        Toast.makeText(this, "Result copied to clipboard", Toast.LENGTH_SHORT).show()
     }
 
     private fun showCamera() {
@@ -87,10 +101,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkPermissionCamera(context : MainActivity) {
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+    private fun checkPermissionCamera(context: MainActivity) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             showCamera()
-        } else if(shouldShowRequestPermissionRationale(android.Manifest.permission.CAMERA)){
+        } else if (shouldShowRequestPermissionRationale(android.Manifest.permission.CAMERA)) {
             // Show an explanation to the user *asynchronously* -- don't block
             // this thread waiting for the user's response! After the user
             // sees the explanation, try again to request the permission.
